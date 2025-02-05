@@ -17,6 +17,9 @@ const MenuPage = () => {
         <Link className="bg-green-200 font-bold px-5 py-3 rounded-xl" to={"/http"}>
           Implementacion HTTP
         </Link>
+        <Link className="bg-green-200 font-bold px-5 py-3 rounded-xl" to={"/location"}>
+          Location Page
+        </Link>
       </div>
     </div>
   );
