@@ -18,7 +18,14 @@ const GeolocationTracker = () => {
             };
 
             setLocation(gpsData);
-            socket.emit("gpsData", gpsData); // Enviar al servidor
+            socket.emit("gpsData", gpsData); // Enviar al servidor WebSocket
+
+            // Enviar datos al backend por REST
+            fetch("http://localhost:3000/gps", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(gpsData), // Ahora se usa la variable correcta
+            }).catch((error) => console.error("Error enviando datos GPS:", error));
           },
           (error) => console.error("Error obteniendo ubicación:", error),
           { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
@@ -30,7 +37,7 @@ const GeolocationTracker = () => {
 
     getLocation();
 
-    // Escuchar eventos del servidor
+    // Escuchar eventos del servidor WebSocket
     socket.on("locationUpdate", (gpsData) => {
       setLocation(gpsData);
     });
@@ -42,7 +49,7 @@ const GeolocationTracker = () => {
 
   return (
     <div>
-      <h3 className="text-xl font-bold">Ubicación GPS (Desde WebSockets)</h3>
+      <h3 className="text-xl font-bold">Ubicación GPS</h3>
       <p>Latitud: {location.latitude}</p>
       <p>Longitud: {location.longitude}</p>
     </div>

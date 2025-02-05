@@ -20,11 +20,21 @@ const AcelerometroTracker = () => {
       };
 
       setAccelerometerData(data);
-      socket.emit("accelerometerData", data); 
+
+      // Enviar por WebSockets
+      socket.emit("accelerometerData", data);
+
+      // Enviar por REST
+      fetch("http://localhost:3000/acelerometro", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }).catch((error) => console.error("Error enviando datos de acelerómetro:", error));
     };
 
     window.addEventListener("devicemotion", handleMotion);
 
+    // Escuchar eventos del servidor WebSocket
     socket.on("accelerometerUpdate", (data) => {
       setAccelerometerData(data);
     });

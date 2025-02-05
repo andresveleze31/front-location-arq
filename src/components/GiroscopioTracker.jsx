@@ -20,8 +20,15 @@ const GiroscopioTracker = () => {
 
       setGyroscopeData(gyroscopeValues);
 
-      // Enviar los datos al servidor
+      // Enviar los datos al servidor WebSocket
       socket.emit('gyroscopeData', gyroscopeValues);
+
+      // Enviar los datos al backend usando REST
+      fetch('http://localhost:3000/giroscopio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(gyroscopeValues),
+      }).catch((error) => console.error('Error enviando datos de giroscopio:', error));
     };
 
     window.addEventListener('deviceorientation', handleOrientation);
@@ -31,7 +38,7 @@ const GiroscopioTracker = () => {
     };
   }, []);
 
-  // Escuchar actualizaciones del servidor
+  // Escuchar actualizaciones del servidor vía WebSockets
   useEffect(() => {
     socket.on('gyroscopeUpdate', (data) => {
       setGyroscopeData(data);
