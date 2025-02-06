@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import io from "socket.io-client";
 
 // Conéctate al servidor WebSocket
-const socket = io("http://localhost:3000");
+//const socket = io("http://localhost:3000");
 
 const AcelerometroTracker = () => {
   const [accelerometerData, setAccelerometerData] = useState({
@@ -22,27 +22,27 @@ const AcelerometroTracker = () => {
       setAccelerometerData(data);
 
       // Enviar por WebSockets
-      socket.emit("accelerometerData", data);
+      //*socket.emit("accelerometerData", data);
 
       // Enviar por REST
-      fetch("http://localhost:3000/acelerometro", {
+      /*fetch("http://localhost:3000/acelerometro", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
-      }).catch((error) => console.error("Error enviando datos de acelerómetro:", error));
+      }).catch((error) => console.error("Error enviando datos de acelerómetro:", error));*/
     };
 
     window.addEventListener("devicemotion", handleMotion);
 
     // Escuchar eventos del servidor WebSocket
-    socket.on("accelerometerUpdate", (data) => {
+    /*socket.on("accelerometerUpdate", (data) => {
       setAccelerometerData(data);
     });
 
     return () => {
       window.removeEventListener("devicemotion", handleMotion);
       socket.off("accelerometerUpdate");
-    };
+    };*/
   }, []);
 
   return (

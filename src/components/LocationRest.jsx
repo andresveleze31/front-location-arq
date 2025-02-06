@@ -1,18 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import io from 'socket.io-client';
 
-const Location = () => {
+const LocationRest = () => {
   const [location, setLocation] = useState(null);
   const [error, setError] = useState(null);
   const [latency, setLatency] = useState(null); // Latencia actual
   const [latencies, setLatencies] = useState([]); // Arreglo para almacenar todas las latencias
-  const [intervalId, setIntervalId] = useState(null); // Para almacenar el ID del intervalo
-  const [isRunning, setIsRunning] = useState(true); // Estado para controlar si el ciclo está en ejecución
+  const [requestCount, setRequestCount] = useState(0); // Contador de peticiones
 
   useEffect(() => {
-    // Establecer la conexión con el servidor
-    const socket = io('http://localhost:3000');
-
     // Función para generar una variación aleatoria en la ubicación
     const getRandomLocation = (lat, lon) => {
       const latVariation = (Math.random() - 0.5) * 0.001; // Variación aleatoria en latitud
@@ -24,18 +19,24 @@ const Location = () => {
     };
 
     // Función para enviar los datos de ubicación y calcular la latencia
-    const sendLocationData = (latitude, longitude) => {
+    const sendLocationData = async (latitude, longitude) => {
       const startTime = Date.now(); // Marca el tiempo antes de enviar los datos
 
       // Obtener los datos de ubicación con una pequeña variación
       const locationData = getRandomLocation(latitude, longitude);
 
-      // Enviar los datos de ubicación al servidor
-      socket.emit('sendLocation', locationData);
+      try {
+        // Enviar los datos de ubicación al servidor usando fetch (REST)
+        const response = await fetch('http://localhost:3000/location', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(locationData),
+        });
 
-      // Escuchar el evento de respuesta del servidor
-      socket.once('locationUpdate', (data) => {
-        const latencyTime = Date.now() - startTime; // Calcula la latencia
+        const data = await response.json();
+        const latencyTime = Date.now() - startTime; // Calcula la latencia real
         console.log('Datos recibidos del servidor:', data);
         setLocation(data); // Actualiza el estado con los datos recibidos
         setLatency(latencyTime); // Actualiza la latencia
@@ -43,29 +44,35 @@ const Location = () => {
         // Guardar la latencia en el arreglo
         setLatencies((prevLatencies) => [...prevLatencies, latencyTime]);
 
-        // Reenviar los mismos datos después de recibir la respuesta para continuar el ciclo
-        if (isRunning) {
-          sendLocationData(data.latitude, data.longitude); // Pasar los datos recibidos para continuar el ciclo
-        }
-      });
+        // Incrementar el contador de peticiones
+        setRequestCount((prevCount) => prevCount + 1);
+      } catch (error) {
+        setError('Error al conectar con el servidor: ' + error.message);
+      }
     };
 
-    // Iniciar el ciclo enviando los datos de ubicación con una ubicación inicial
-    if (isRunning) {
-      sendLocationData(40.7128, -74.0060); // Ubicación inicial en Nueva York
+    // Función para iniciar el ciclo de 100 peticiones
+    const startCycle = async () => {
+      let currentCount = 0;
+      let latitude = 40.7128; // Latitud inicial
+      let longitude = -74.0060; // Longitud inicial
+
+      while (currentCount < 100) {
+        await sendLocationData(latitude, longitude); // Enviar los datos y esperar la respuesta
+        currentCount++;
+        latitude += 0.0001; // Ajustar la latitud para la siguiente iteración (variación simulada)
+        longitude += 0.0001; // Ajustar la longitud para la siguiente iteración (variación simulada)
+      }
+    };
+
+    // Iniciar el ciclo solo si requestCount es 0 (no ha iniciado aún)
+    if (requestCount === 0) {
+      startCycle(); // Comienza el ciclo de 100 peticiones
     }
 
-    // Limpiar la conexión cuando el componente se desmonte
-    return () => {
-      socket.off('locationUpdate');
-      socket.disconnect();
-    };
-  }, [isRunning]); // Volver a ejecutar cuando el estado isRunning cambie
-
-  // Función para detener el ciclo
-  const stopCycle = () => {
-    setIsRunning(false);
-  };
+    // Limpiar el intervalo cuando el componente se desmonte
+    return () => {};
+  }, [requestCount]); // Reejecutar el efecto cuando el contador de peticiones cambie
 
   // Calcular la latencia promedio
   const getAverageLatency = () => {
@@ -86,24 +93,19 @@ const Location = () => {
         <p>Cargando ubicación...</p>
       )}
       {latency !== null && <p>Latencia actual: {latency} ms</p>} {/* Mostrar la latencia */}
-      <button onClick={stopCycle} disabled={!isRunning}>
-        Detener ciclo
-      </button>
 
       {/* Mostrar la lista de latencias y la latencia promedio */}
-      {!isRunning && (
-        <div>
-          <h3>Latencias registradas:</h3>
-          <ul>
-            {latencies.map((latency, index) => (
-              <li key={index}>{latency} ms</li>
-            ))}
-          </ul>
-          <p>Latencia promedio: {getAverageLatency()} ms</p>
-        </div>
-      )}
+      <div>
+        <h3>Latencias registradas:</h3>
+        <ul>
+          {latencies.map((latency, index) => (
+            <li key={index}>{latency} ms</li>
+          ))}
+        </ul>
+        <p>Latencia promedio: {getAverageLatency()} ms</p>
+      </div>
     </div>
   );
 };
 
-export default Location;
+export default LocationRest;

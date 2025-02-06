@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import io from "socket.io-client";
 
-const socket = io("http://localhost:3000");
+//const socket = io("http://localhost:3000");
 
 const GeolocationTracker = () => {
   const [location, setLocation] = useState({ latitude: null, longitude: null });
@@ -18,14 +18,16 @@ const GeolocationTracker = () => {
             };
 
             setLocation(gpsData);
-            socket.emit("gpsData", gpsData); // Enviar al servidor WebSocket
+            //socket.emit("gpsData", gpsData); // Enviar al servidor WebSocket
 
             // Enviar datos al backend por REST
+            /*
             fetch("http://localhost:3000/gps", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(gpsData), // Ahora se usa la variable correcta
             }).catch((error) => console.error("Error enviando datos GPS:", error));
+            */
           },
           (error) => console.error("Error obteniendo ubicación:", error),
           { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
@@ -38,13 +40,14 @@ const GeolocationTracker = () => {
     getLocation();
 
     // Escuchar eventos del servidor WebSocket
+    /*
     socket.on("locationUpdate", (gpsData) => {
       setLocation(gpsData);
-    });
+    });*/
 
-    return () => {
+    /*return () => {
       socket.off("locationUpdate");
-    };
+    };*/
   }, []);
 
   return (

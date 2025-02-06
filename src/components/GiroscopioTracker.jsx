@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 
-const socket = io('http://localhost:3000'); // Conectar con el servidor WebSocket
+//const socket = io('http://localhost:3000'); // Conectar con el servidor WebSocket
 
 const GiroscopioTracker = () => {
   const [gyroscopeData, setGyroscopeData] = useState({
@@ -21,14 +21,15 @@ const GiroscopioTracker = () => {
       setGyroscopeData(gyroscopeValues);
 
       // Enviar los datos al servidor WebSocket
-      socket.emit('gyroscopeData', gyroscopeValues);
+      //socket.emit('gyroscopeData', gyroscopeValues);
 
       // Enviar los datos al backend usando REST
-      fetch('http://localhost:3000/giroscopio', {
+      /*fetch('http://localhost:3000/giroscopio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(gyroscopeValues),
       }).catch((error) => console.error('Error enviando datos de giroscopio:', error));
+      */
     };
 
     window.addEventListener('deviceorientation', handleOrientation);
@@ -39,7 +40,7 @@ const GiroscopioTracker = () => {
   }, []);
 
   // Escuchar actualizaciones del servidor vía WebSockets
-  useEffect(() => {
+  /*useEffect(() => {
     socket.on('gyroscopeUpdate', (data) => {
       setGyroscopeData(data);
     });
@@ -47,7 +48,7 @@ const GiroscopioTracker = () => {
     return () => {
       socket.off('gyroscopeUpdate');
     };
-  }, []);
+  }, []);*/
 
   return (
     <div>
