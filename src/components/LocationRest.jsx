@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
+// Componente para manejar la lógica de cada usuario
 const LocationRest = () => {
   const [location, setLocation] = useState(null);
   const [error, setError] = useState(null);
   const [latency, setLatency] = useState(null); // Latencia actual
   const [latencies, setLatencies] = useState([]); // Arreglo para almacenar todas las latencias
   const [requestCount, setRequestCount] = useState(0); // Contador de peticiones
+  const [memoryUsage, setMemoryUsage] = useState(null); // Uso de memoria
 
   useEffect(() => {
     // Función para generar una variación aleatoria en la ubicación
@@ -37,7 +39,6 @@ const LocationRest = () => {
 
         const data = await response.json();
         const latencyTime = Date.now() - startTime; // Calcula la latencia real
-        console.log('Datos recibidos del servidor:', data);
         setLocation(data); // Actualiza el estado con los datos recibidos
         setLatency(latencyTime); // Actualiza la latencia
 
@@ -70,8 +71,18 @@ const LocationRest = () => {
       startCycle(); // Comienza el ciclo de 100 peticiones
     }
 
-    // Limpiar el intervalo cuando el componente se desmonte
-    return () => {};
+    // Monitoreo de la performance (memoria) en el frontend
+    const monitorPerformance = () => {
+      const { memory } = window.performance;
+      setMemoryUsage(memory.totalJSHeapSize / 1024 / 1024); // Convertir a MB
+    };
+
+    const interval = setInterval(monitorPerformance, 1000); // Monitorea cada segundo
+
+    // Limpiar intervalos cuando el componente se desmonte
+    return () => {
+      clearInterval(interval);
+    };
   }, [requestCount]); // Reejecutar el efecto cuando el contador de peticiones cambie
 
   // Calcular la latencia promedio
@@ -104,8 +115,28 @@ const LocationRest = () => {
         </ul>
         <p>Latencia promedio: {getAverageLatency()} ms</p>
       </div>
+
+      {/* Mostrar el uso de memoria en la página */}
+      {memoryUsage !== null && (
+        <h3>Uso de Memoria: {memoryUsage.toFixed(2)} MB</h3>
+      )}
     </div>
   );
 };
 
-export default LocationRest;
+// Componente para simular múltiples usuarios (dispositivos)
+const SimulateMultipleClients = () => {
+  const numberOfClients = 10; // Simulando 10 dispositivos
+  const clients = new Array(numberOfClients).fill(0);
+
+  return (
+    <div>
+      <h1>Simulación de múltiples dispositivos</h1>
+      {clients.map((_, index) => (
+        <LocationRest key={index} />
+      ))}
+    </div>
+  );
+};
+
+export default SimulateMultipleClients;

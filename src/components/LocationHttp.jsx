@@ -46,6 +46,22 @@ const LocationHttp = () => {
 
   const averageLatency = latencies.length > 0 ? latencies.reduce((a, b) => a + b, 0) / latencies.length : 0;
 
+  // Monitoreo de la performance (memoria) en el frontend
+  const [memoryUsage, setMemoryUsage] = useState(null); // Estado para almacenar el uso de memoria
+
+  useEffect(() => {
+    const monitorPerformance = () => {
+      const { memory } = window.performance;
+      setMemoryUsage(memory.totalJSHeapSize / 1024 / 1024); // Convertir a MB
+    };
+
+    const interval = setInterval(monitorPerformance, 1000); // Monitorea cada segundo
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
   return (
     <div>
       <h1>Ubicación en tiempo real</h1>
@@ -59,8 +75,28 @@ const LocationHttp = () => {
       {latency !== null && <p>Latencia: {latency} ms</p>}
       <h3>Latencias por petición: {latencies.join(', ')}</h3>
       <h3>Latencia promedio: {averageLatency} ms</h3>
+
+      {/* Mostrar el uso de memoria en la página */}
+      {memoryUsage !== null && (
+        <h3>Uso de Memoria: {memoryUsage.toFixed(2)} MB</h3>
+      )}
     </div>
   );
 };
 
-export default LocationHttp;
+// Componente para simular múltiples dispositivos conectados
+const SimulateMultipleClients = () => {
+  const numberOfClients = 10; // Simulando 10 dispositivos
+  const clients = new Array(numberOfClients).fill(0);
+
+  return (
+    <div>
+      <h1>Simulación de múltiples dispositivos</h1>
+      {clients.map((_, index) => (
+        <LocationHttp key={index} />
+      ))}
+    </div>
+  );
+};
+
+export default SimulateMultipleClients;
